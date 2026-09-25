@@ -1,0 +1,30 @@
+---
+import fs from 'node:fs';
+import path from 'node:path';
+import { media } from '../data/media';
+
+const video = media.video;
+const exists = (src: string) => Boolean(src) && fs.existsSync(path.join(process.cwd(), 'public', src.replace(/^\//, '')));
+const ready = exists(video.src);
+const poster = exists(video.poster) ? video.poster : undefined;
+const captions = exists(video.captions) ? video.captions : '';
+const type = video.src.endsWith('.webm') ? 'video/webm' : 'video/mp4';
+---
+
+{
+  ready ? (
+    <figure class="video-slot is-ready">
+      <video controls preload="none" playsinline width={video.width} height={video.height} poster={poster}>
+        <source src={video.src} type={type} />
+        {captions && <track kind="captions" src={captions} srclang="es" label="Español" />}
+      </video>
+      <figcaption>{video.title}</figcaption>
+    </figure>
+  ) : (
+    <div class="video-slot">
+      <span>Video</span>
+      <strong>Video del proceso por incorporar</strong>
+      <p>Queda preparado un espacio de 15 a 30 segundos. Se activa al indicar un archivo local en la configuración; mientras tanto no hay botón de reproducción.</p>
+    </div>
+  )
+}

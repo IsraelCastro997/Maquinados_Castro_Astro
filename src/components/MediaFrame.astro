@@ -1,0 +1,48 @@
+---
+import fs from 'node:fs';
+import path from 'node:path';
+import type { MediaItem } from '../data/media';
+
+interface Props {
+  item: MediaItem;
+  sizes?: string;
+  loading?: 'lazy' | 'eager';
+  fetchpriority?: 'high' | 'low' | 'auto';
+  class?: string;
+}
+
+const { item, sizes, loading = 'lazy', fetchpriority, class: className } = Astro.props;
+const localPath = item.src ? path.join(process.cwd(), 'public', item.src.replace(/^\//, '')) : '';
+const available = Boolean(item.src) && !item.isPlaceholder && fs.existsSync(localPath);
+---
+
+<figure class:list={['media-frame', className, { 'is-placeholder': !available }]}>
+  {
+    available ? (
+      <img
+        src={item.src}
+        srcset={item.srcset || undefined}
+        sizes={sizes}
+        width={item.width}
+        height={item.height}
+        alt={item.alt}
+        loading={loading}
+        decoding="async"
+        fetchpriority={fetchpriority}
+      />
+    ) : (
+      <div class="media-placeholder" style={`aspect-ratio:${item.width} / ${item.height}`} role="img" aria-label={item.caption}>
+        <span>Imagen de referencia</span>
+        <strong>{item.caption}</strong>
+      </div>
+    )
+  }
+  {
+    available && (
+      <figcaption>
+        <span>{item.caption}</span>
+        <small>Imagen de referencia{item.credit ? ` · ${item.credit}` : ''}</small>
+      </figcaption>
+    )
+  }
+</figure>
